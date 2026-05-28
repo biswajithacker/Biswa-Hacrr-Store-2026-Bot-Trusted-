@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trusted Store 2026</title>
+    <style>
+        /* Luxury Tech UI Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SF Pro Display', '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100vh;
+            background-color: #050508;
+            color: #ffffff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- LUXURY CAR-BOOT INTRO ANIMATION --- */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(circle at center, #0d1117 0%, #050508 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+        }
+
+        .luxury-loader {
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(69, 243, 255, 0.1);
+            border-top: 2px solid #00f2fe;
+            border-right: 2px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1.2s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.2);
+        }
+
+        .luxury-loader::after {
+            content: '';
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 2px solid transparent;
+            border-bottom: 2px solid #d4af37;
+            border-left: 2px solid #aa7c11;
+            border-radius: 50%;
+            animation: spin-reverse 0.8s linear infinite;
+        }
+
+        .intro-title {
+            margin-top: 40px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #00f2fe;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+            text-transform: uppercase;
+        }
+
+        .intro-subtitle {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #d4af37;
+            letter-spacing: 3px;
+            font-weight: 500;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
+
+        /* --- MAIN HUB INTERFACE (100vh Phone Screen Fit) --- */
+        #main-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease-in;
+        }
+
+        /* Top Bar Layout */
+        .chat-header {
+            background: linear-gradient(180deg, #0d1117 0%, #050508 100%);
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(0, 242, 254, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-online {
+            width: 10px;
+            height: 10px;
+            background-color: #00ffcc;
+            border-radius: 50%;
+            margin-right: 12px;
+            box-shadow: 0 0 12px #00ffcc;
+        }
+
+        .chat-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+
+        .brand-tag {
+            font-size: 12px;
+            color: #d4af37;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border: 1px solid #d4af37;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        /* Core Workspace Splitting */
+        .workspace {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 140px); /* Dynmic calculation for input alignment */
+            width: 100%;
+        }
+
+        /* QR Panel Dashboard */
+        .sidebar {
+            width: 32%;
+            background-color: #090d14;
+            border-right: 1px solid rgba(0, 242, 254, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .sidebar h3 {
+            color: #00f2fe;
+            font-size: 15px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .qr-box {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 16px;
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.15);
+            margin-bottom: 25px;
+            display: none; 
+            animation: fadeIn 0.4s ease;
+        }
+
+        .qr-box img {
+            width: 160px;
+            height: 160px;
+            display: block;
+        }
+
+        .sidebar p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        /* Chat Stream Terminal */
+        .chat-container {
+            width: 68%;
+            display: flex;
+            flex-direction: column;
+            background-color: #050508;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .msg.bot {
+            background-color: #0d1117;
+            color: #ffffff;
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .msg.user {
+            background: linear-gradient(135deg, #005f73, #0a9396);
+            color: #ffffff;
+            align-self: flex-end;
+            border-top-right-radius: 2px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Command Button Panel architecture */
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            background: rgba(0, 242, 254, 0.03);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            color: #00f2fe;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover, .action-btn:active {
+            background: #00f2fe;
+            color: #050508;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+        }
+
+        /* Special Owner Button Styles */
+        .owner-btn-tg {
+            background: rgba(0, 136, 204, 0.1);
+            border: 1px solid #0088cc;
+            color: #0088cc;
+        }
+        .owner-btn-tg:hover, .owner-btn-tg:active {
+            background: #0088cc;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(0, 136, 204, 0.5);
+        }
+
+        .owner-btn-wa {
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid #25d366;
+            color: #25d366;
+        }
+        .owner-btn-wa:hover, .owner-btn-wa:active {
+            background: #25d366;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
+        }
+
+        /* Error Text Styling */
+        .error-msg {
+            color: #ff4a4a !important;
+            border: 1px solid rgba(255, 74, 74, 0.3) !important;
+            background: rgba(255, 74, 74, 0.05) !important;
+            font-weight: 600;
+        }
+
+        /* Input Deck Configuration */
+        .chat-input-bar {
+            padding: 16px 20px;
+            background-color: #0d1117;
+            border-top: 1px solid rgba(0, 242, 254, 0.15);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            background-color: #050508;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px 20px;
+            border-radius: 30px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input-bar input:focus {
+            border-color: #00f2fe;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            border: none;
+            color: #050508;
+            padding: 0 22px;
+            height: 45px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .timer-txt {
+            color: #ff4a4a;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .redirect-link {
+            display: inline-block;
+            margin-top: 12px;
+            background: #d4af37;
+            color: #050508;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5deg); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsive UI overhauls for Mobile Devices */
+        @media(max-width: 768px) {
+            .workspace { flex-direction: column; height: calc(100vh - 135px); }
+            .sidebar { width: 100%; height: auto; padding: 12px; border-right: none; border-bottom: 1px solid rgba(0, 242, 254, 0.1); }
+            .chat-container { width: 100%; flex: 1; }
+            .qr-box img { width: 120px; height: 120px; }
+            .qr-box { margin-bottom: 10px; }
+            .chat-messages { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <div class="luxury-loader"></div>
+        <div class="intro-title">Welcome Trusted Store 2026</div>
+        <div class="intro-subtitle">Bye BISWA HACRR</div>
+    </div>
+
+    <div id="main-content">
+        <div class="chat-header">
+            <div class="header-info">
+                <div class="status-online"></div>
+                <h2>BISWA HACRR Automation Terminal</h2>
+            </div>
+            <div class="brand-tag">SECURE V3</div>
+        </div>
+
+        <div class="workspace">
+            <div class="sidebar">
+                <h3>Gateway Console</h3>
+                <div class="qr-box" id="qr-container">
+                    <img src="QR_Code.png" alt="QR Code" onerror="this.src='https://via.placeholder.com/160?text=QR+Ready'">
+                </div>
+                <p id="sidebar-status">System Standby. Execute operations using chat terminal commands.</p>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-box">
+                    <div class="msg bot">
+                        Welcome to the Elite Dashboard. Please execute <b>start/</b> command or <b>owner/</b> command to proceed.
+                    </div>
+                </div>
+
+                <div class="chat-input-bar">
+                    <input type="text" id="user-msg" placeholder="Enter console command..." onkeypress="checkEnter(event)">
+                    <button class="send-btn" onclick="processUserText()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio Synthesis Context for Futuristic UI Touch Response
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTouchSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch crisp sound
+            osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        const modsDatabase = {
+            "The King👑Non Root Seft": ["3day - 120", "7 days - 300", "10 days - 400", "30 days - 1000"],
+            "Drip Claint Non Root": ["1day - 82", "3days - 180", "7days - 340", "15days - 590", "30days - 810"],
+            "Hg Cheats Non Root": ["1 day - 91", "7days - 180", "10 days - 280", "30days - 600"],
+            "Pato Team Non Root": ["3day - 210", "7days - 340", "15day - 600", "30 days - 950"],
+            "Praim Mod Non Root": ["1day - 82", "3days - 150", "7days - 300", "10 days - 330"],
+            "Mai account Seft Drag Headshot Panel": ["Unlimited Time After Patch Update tak - 500"]
+        };
+
+        let selectedMod = "";
+
+        // Fade Out Engine for Intro
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const intro = document.getElementById('intro-overlay');
+                const main = document.getElementById('main-content');
+                intro.style.opacity = '0';
+                intro.style.visibility = 'hidden';
+                main.style.opacity = '1';
+                main.style.visibility = 'visible';
+            }, 3000);
+        });
+
+        function checkEnter(e) { if (e.key === 'Enter') processUserText(); }
+
+        function processUserText() {
+            playTouchSound();
+            const input = document.getElementById('user-msg');
+            const txt = input.value.trim();
+            if(!txt) return;
+
+            appendMessage(txt, 'user');
+            input.value = '';
+
+            const normalized = txt.toLowerCase();
+
+            setTimeout(() => {
+                if(normalized === 'start/') {
+                    triggerStart();
+                } else if(normalized === 'owner/') {
+                    triggerOwner();
+                } else if(normalized === 'hii') {
+                    appendMessage("Hello! Welcome to the premium portal.", 'bot');
+                } else {
+                    appendMessage("Your code not working", 'bot error-msg');
+                }
+            }, 500);
+        }
+
+        function appendMessage(text, className) {
+            const chatBox = document.getElementById('chat-box');
+            const mDiv = document.createElement('div');
+            mDiv.className = `msg ${className.includes('user') ? 'user' : 'bot'} ${className}`;
+            mDiv.innerHTML = text;
+            chatBox.appendChild(mDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return mDiv;
+        }
+
+        // Action Menu: Start/ Command Flow
+        function triggerStart() {
+            appendMessage("<b>Premium Devices Mods Registry:</b><br>Select your core product architecture from the matrix options below:", 'bot');
+            
+            const chatBox = document.getElementById('chat-box');
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container';
+
+            Object.keys(modsDatabase).forEach(modName => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn';
+                btn.innerText = modName;
+                btn.onclick = () => { playTouchSound(); selectModPlan(modName); };
+                btnContainer.appendChild(btn);
+            });
+
+            chatBox.appendChild(btnContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Action Menu: Owner/ Command Flow
+        function triggerOwner() {
+            appendMessage("<b>Owner Contact Channels Initialized:</b><br>Select one of the direct telemetry links to reach the core developer:", 'bot');
+            
+            const chatBox = document.getElementById('chat-box');
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container';
+
+            // Telegram Route
+            const tgBtn = document.createElement('button');
+            tgBtn.className = 'action-btn owner-btn-tg';
+            tgBtn.innerText = "Telegram Channel";
+            tgBtn.onclick = () => { playTouchSound(); window.open("https://t.me/HacrrGaming", "_blank"); };
+            btnContainer.appendChild(tgBtn);
+
+            // WhatsApp Route
+            const waBtn = document.createElement('button');
+            waBtn.className = 'action-btn owner-btn-wa';
+            waBtn.innerText = "WhatsApp Terminal (+7099517202)";
+            waBtn.onclick = () => { playTouchSound(); window.open("https://wa.me/7099517202", "_blank"); };
+            btnContainer.appendChild(waBtn);
+
+            chatBox.appendChild(btnContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function selectModPlan(modName) {
+            selectedMod = modName;
+            appendMessage(`Core Selected: <b>${modName}</b>.<br>Choose your desired subscription duration runtime:`, 'bot');
+
+            const chatBox = document.getElementById('chat-box');
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container';
+
+            modsDatabase[modName].forEach(plan => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn';
+                btn.innerText = plan;
+                btn.onclick = () => { playTouchSound(); generateCheckout(plan); };
+                btnContainer.appendChild(btn);
+            });
+
+            chatBox.appendChild(btnContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function generateCheckout(planDetails) {
+            document.getElementById('qr-container').style.display = 'block';
+            document.getElementById('sidebar-status').innerText = `Active Transaction Profile: ${selectedMod} (${planDetails})`;
+
+            const instructions = `<b>⚠️ Secure Checkout Initialized!</b><br>Please Payment And Screenshot And 3 Minutes Wait.<br>The configuration key will decrypt once the timer reaches zero.`;
+            const botMsgDiv = appendMessage(instructions, 'bot');
+
+            const timerDiv = document.createElement('div');
+            timerDiv.className = 'timer-txt';
+            timerDiv.innerText = "Time Remaining: 03:00";
+            botMsgDiv.appendChild(timerDiv);
+
+            let totalSeconds = 180;
+            const interval = setInterval(() => {
+                totalSeconds--;
+                let mins = Math.floor(totalSeconds / 60);
+                let secs = totalSeconds % 60;
+                timerDiv.innerText = `Time Remaining: ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                if (totalSeconds <= 0) {
+                    clea
