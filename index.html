@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trusted Store 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: #0b0c10;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* --- 1. CAR-BOOT PREMIUM INTRO ANIMATION --- */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #1f2833 0%, #0b0c10 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+
+        .loader-ring {
+            width: 120px;
+            height: 120px;
+            border: 4px solid transparent;
+            border-top: 4px solid #45f3ff;
+            border-bottom: 4px solid #45f3ff;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+            position: relative;
+            box-shadow: 0 0 25px #45f3ff, inset 0 0 15px #45f3ff;
+        }
+
+        .loader-ring::after {
+            content: '';
+            position: absolute;
+            top: 15px; left: 15px; right: 15px; bottom: 15px;
+            border: 3px solid transparent;
+            border-left: 3px solid #66fcf1;
+            border-right: 3px solid #66fcf1;
+            border-radius: 50%;
+            animation: spin-reverse 1s linear infinite;
+        }
+
+        .intro-title {
+            margin-top: 35px;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: #45f3ff;
+            text-align: center;
+            text-shadow: 0 0 15px #45f3ff;
+            text-transform: uppercase;
+        }
+
+        .intro-subtitle {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #c5a059;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
+
+        /* --- 2. MAIN INTERFACE --- */
+        #main-content {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease-in;
+        }
+
+        /* Left Side: QR Display Area */
+        .sidebar {
+            width: 35%;
+            background-color: #1f2833;
+            border-right: 2px solid #45f3ff22;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .sidebar h3 {
+            color: #45f3ff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(69, 243, 255, 0.4);
+        }
+
+        .qr-box {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(69, 243, 255, 0.2);
+            margin-bottom: 20px;
+            display: none; /* Initially Hidden, triggers on choice */
+        }
+
+        .qr-box img {
+            width: 200px;
+            height: 200px;
+            display: block;
+        }
+
+        /* Right Side: Chat Container */
+        .chat-container {
+            width: 65%;
+            display: flex;
+            flex-direction: column;
+            background-color: #0b0c10;
+        }
+
+        .chat-header {
+            background-color: #1f2833;
+            padding: 20px;
+            border-bottom: 1px solid #45f3ff22;
+            display: flex;
+            align-items: center;
+        }
+
+        .status-online {
+            width: 12px;
+            height: 12px;
+            background-color: #00ffcc;
+            border-radius: 50%;
+            margin-right: 15px;
+            box-shadow: 0 0 10px #00ffcc;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 15px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .msg.bot {
+            background-color: #1f2833;
+            color: #ffffff;
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+            border: 1px solid #45f3ff11;
+        }
+
+        .msg.user {
+            background: linear-gradient(135deg, #1f2833, #005f73);
+            color: #ffffff;
+            align-self: flex-end;
+            border-top-right-radius: 2px;
+        }
+
+        /* Command/Options Buttons style */
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            background: #1f2833;
+            border: 1px solid #45f3ff88;
+            color: #45f3ff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #45f3ff;
+            color: #0b0c10;
+            box-shadow: 0 0 15px #45f3ff;
+        }
+
+        .start-highlight {
+            background-color: #45f3ff22;
+            color: #45f3ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Input Panel */
+        .chat-input-bar {
+            padding: 20px;
+            background-color: #1f2833;
+            border-top: 1px solid #45f3ff22;
+            display: flex;
+            gap: 15px;
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            background-color: #0b0c10;
+            border: 1px solid #45f3ff44;
+            padding: 15px 20px;
+            border-radius: 30px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .chat-input-bar input:focus {
+            border-color: #45f3ff;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #45f3ff, #66fcf1);
+            border: none;
+            color: #0b0c10;
+            padding: 0 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Timer and links */
+        .timer-txt {
+            color: #ff4a4a;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .tg-link {
+            display: inline-block;
+            margin-top: 12px;
+            background: #0088cc;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,136,204,0.4);
+        }
+
+        @media(max-width: 768px) {
+            #main-content { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; }
+            .chat-container { width: 100%; height: 65vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <div class="loader-ring"></div>
+        <div class="intro-title">Welcome Trusted Store 2026</div>
+        <div class="intro-subtitle">Bye BISWA HACRR</div>
+    </div>
+
+    <div id="main-content">
+        <div class="sidebar">
+            <h3>Payment Gateway</h3>
+            <div class="qr-box" id="qr-container">
+                <img src="QR_Code.png" alt="QR Code" onerror="this.src='https://via.placeholder.com/200?text=QR+Code+Ready'">
+            </div>
+            <p id="sidebar-status">Select a mod from the chat to initialize secure connection.</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="status-online"></div>
+                <h2>BISWA HACRR Verification Bot</h2>
+            </div>
+
+            <div class="chat-messages" id="chat-box">
+                <div class="msg bot">
+                    Apko Swagat Hai Hamare Bot Par Ye Bot 100% Trusted And Secour hai kripaya bot Start karne ke liye <span class="start-highlight" onclick="triggerStart()">start/</span> dabaye.
+                </div>
+            </div>
+
+            <div class="chat-input-bar">
+                <input type="text" id="user-msg" placeholder="Type start/ here..." onkeypress="checkEnter(event)">
+                <button class="send-btn" onclick="processUserText()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mods and pricing data architecture
+        const modsDatabase = {
+            "The King👑Non Root Seft": ["3day - 120", "7 days - 300", "10 days - 400", "30 days - 1000"],
+            "Drip Claint Non Root": ["1day - 82", "3days - 180", "7days - 340", "15days - 590", "30days - 810"],
+            "Hg Cheats Non Root": ["1 day - 91", "7days - 180", "10 days - 280", "30days - 600"],
+            "Pato Team Non Root": ["3day - 210", "7days - 340", "15day - 600", "30 days - 950"],
+            "Praim Mod Non Root": ["1day - 82", "3days - 150", "7days - 300", "10 days - 330"],
+            "Mai account Seft Drag Headshot Panel": ["Unlimited Time After Patch Update tak - 500"]
+        };
+
+        let selectedMod = "";
+
+        // Intro Timing System
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const intro = document.getElementById('intro-overlay');
+                const main = document.getElementById('main-content');
+                intro.style.opacity = '0';
+                intro.style.visibility = 'hidden';
+                main.style.opacity = '1';
+                main.style.visibility = 'visible';
+            }, 3500);
+        });
+
+        function checkEnter(e) { if (e.key === 'Enter') processUserText(); }
+
+        function processUserText() {
+            const input = document.getElementById('user-msg');
+            const txt = input.value.trim().toLowerCase();
+            if(!txt) return;
+
+            appendMessage(input.value, 'user');
+            input.value = '';
+
+            if(txt === 'start/' || txt === 'start') {
+                setTimeout(() => { triggerStart(); }, 600);
+            } else {
+                setTimeout(() => {
+                    appendMessage("Invalid Command. Kripaya list dekhne ke liye 'start/' type karein.", 'bot');
+                }, 600);
+            }
+        }
+
+        function appendMessage(text, sender) {
+            const chatBox = document.getElementById('chat-box');
+            const mDiv = document.createElement('div');
+            mDiv.className = `msg ${sender}`;
+            mDiv.innerHTML = text;
+            chatBox.appendChild(mDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return mDiv;
+        }
+
+        // Trigger Mod Menu List
+        function triggerStart() {
+            appendMessage("<b>Non Root Device Mods List:</b><br>Kripaya apna pasandida mod niche diye gaye options se select karein:", 'bot');
+            
+            const chatBox = document.getElementById('chat-box');
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container';
+
+            Object.keys(modsDatabase).forEach(modName => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn';
+                btn.innerText = modName;
+                btn.onclick = () => selectModPlan(modName);
+                btnContainer.appendChild(btn);
+            });
+
+            chatBox.appendChild(btnContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Trigger Pricing Sub-Menu
+        function selectModPlan(modName) {
+            selectedMod = modName;
+            appendMessage(`Aapne select kiya: <b>${modName}</b>.<br>Ab apna suitable pack select karein:`, 'bot');
+
+            const chatBox = document.getElementById('chat-box');
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container';
+
+            modsDatabase[modName].forEach(plan => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn';
+                btn.innerText = plan;
+                btn.onclick = () => generateCheckout(plan);
+                btnContainer.appendChild(btn);
+            });
+
+            chatBox.appendChild(btnContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Generate QR, Alert & 3 Minutes Dynamic Countdown
+        function generateCheckout(planDetails) {
+            // Show QR Code inside left Sidebar
+            document.getElementById('qr-container').style.display = 'block';
+            document.getElementById('sidebar-status').innerText = `Paying for: ${selectedMod} (${planDetails})`;
+
+            const instructions = `<b>⚠️ Action Required!</b><br>Please Payment And Screenshot And 3 Minutes Wait.<br>Aapka unique key aur setup link timer khatam hote hi generate ho jayega.`;
+            const botMsgDiv = appendMessage(instructions, 'bot');
+
+            // Timer display sub-element
+            const timerDiv = document.createElement('div');
+            timerDiv.className = 'timer-txt';
+            timerDiv.innerText = "Time Remaining: 03:00";
+            botMsgDiv.appendChild(timerDiv);
+
+            let totalSeconds = 180; // 3 Minutes countdown
+            const interval = setInterval(() => {
+                totalSeconds--;
+                let mins = Math.floor(totalSeconds / 60);
+                let secs = totalSeconds % 60;
+                timerDiv.innerText = `Time Remaining: ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                if (totalSeconds <= 0) {
+                    clearInterval(interval);
+                    timerDiv.style.color = '#00ffcc';
+                    timerDiv.innerText = "Verification Complete! ✅";
+                    
+                    // Generate Auto Message Link format for Telegram
+                    const baseTgUrl = "https://t.me/HacrrGaming";
+                    const formattedText = encodeURIComponent(`Hello Biswa, Maine Mod purchase kiya hai:\n\nMod Name: ${selectedMod}\nPlan: ${planDetails}\nPayment status: Screenshot Attached.`);
+                    const deepLink = `${baseTgUrl}?text=${formattedText}`;
+
+                    const successContainer = document.createElement('div');
+                    successContainer.innerHTML = `<br>Aapka verification complete ho chuka hai. Niche diye gaye link par click karke apna setup collect karein:<br><a href="${deepLink}" target="_blank" class="tg-link">Contact @HacrrGaming on Telegram</a>`;
+                    botMsgDiv.appendChild(successContainer);
+                    
+                    // Auto-scrolling
+                    document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+  </html>
+  
