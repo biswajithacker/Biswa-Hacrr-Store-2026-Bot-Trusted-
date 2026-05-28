@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trusted Store 2026</title>
+    <style>
+        /* Global Reset & Phone Screen Fit */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100vh;
+            background-color: #050508;
+            color: #ffffff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- LUXURY CAR-BOOT INTRO ANIMATION --- */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(circle at center, #0d1117 0%, #050508 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .luxury-loader {
+            width: 90px;
+            height: 90px;
+            border: 2px solid rgba(0, 242, 254, 0.1);
+            border-top: 2px solid #00f2fe;
+            border-right: 2px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: relative;
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.3);
+        }
+
+        .luxury-loader::after {
+            content: '';
+            position: absolute;
+            top: 8px; left: 8px; right: 8px; bottom: 8px;
+            border: 2px solid transparent;
+            border-bottom: 2px solid #d4af37;
+            border-left: 2px solid #aa7c11;
+            border-radius: 50%;
+            animation: spin-reverse 0.8s linear infinite;
+        }
+
+        .intro-title {
+            margin-top: 35px;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #00f2fe;
+            text-align: center;
+            text-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+            text-transform: uppercase;
+            padding: 0 15px;
+        }
+
+        .intro-subtitle {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #d4af37;
+            letter-spacing: 3px;
+            font-weight: 500;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
+
+        /* --- MAIN INTERFACE DISPLAY --- */
+        #main-content {
+            display: none; /* Controlled strictly by JS to prevent overlay lock */
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* Top Bar Layout */
+        .chat-header {
+            background: #0d1117;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 242, 254, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-online {
+            width: 10px;
+            height: 10px;
+            background-color: #00ffcc;
+            border-radius: 50%;
+            margin-right: 12px;
+            box-shadow: 0 0 10px #00ffcc;
+        }
+
+        .chat-header h2 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .brand-tag {
+            font-size: 11px;
+            color: #d4af37;
+            font-weight: 700;
+            border: 1px solid #d4af37;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        /* Core Body Workspace Split */
+        .workspace {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 130px);
+            width: 100%;
+        }
+
+        /* Gateway Sidebar */
+        .sidebar {
+            width: 30%;
+            background-color: #090d14;
+            border-right: 1px solid rgba(0, 242, 254, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .sidebar h3 {
+            color: #00f2fe;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .qr-box {
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
+            margin-bottom: 15px;
+            display: none; 
+        }
+
+        .qr-box img {
+            width: 150px;
+            height: 150px;
+            display: block;
+        }
+
+        .sidebar p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        /* Terminal Chat Feed */
+        .chat-container {
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+            background-color: #050508;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .msg.bot {
+            background-color: #0d1117;
+            color: #ffffff;
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .msg.user {
+            background: linear-gradient(135deg, #005f73, #0a9396);
+            color: #ffffff;
+            align-self: flex-end;
+            border-top-right-radius: 2px;
+        }
+
+        /* Matrices Buttons Structure */
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            background: rgba(0, 242, 254, 0.03);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            color: #00f2fe;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover, .action-btn:active {
+            background: #00f2fe;
+            color: #050508;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+        }
+
+        .owner-btn-tg { border-color: #0088cc; color: #0088cc; }
+        .owner-btn-tg:hover { background: #0088cc; color: #fff; }
+
+        .owner-btn-wa { border-color: #25d366; color: #25d366; }
+        .owner-btn-wa:hover { background: #25d366; color: #fff; }
+
+        .error-msg {
+            color: #ff4a4a !important;
+            border: 1px solid rgba(255, 74, 74, 0.2) !important;
+            background: rgba(255, 74, 74, 0.05) !important;
+        }
+
+        /* Bottom Input Deck */
+        .chat-input-bar {
+            padding: 15px 20px;
+            background-color: #0d1117;
+            border-top: 1px solid rgba(0, 242, 254, 0.15);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            background-color: #050508;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 18px;
+            border-radius: 25px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .chat-input-bar input:focus { border-color: #00f2fe; }
+
+        .send-btn {
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            border: none;
+            color: #050508;
+            padding: 0 20px;
+            height: 40px;
+            border-radius: 25px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .timer-txt { color: #ff4a4a; font-weight: bold; margin-top: 10px; font-size: 13px; }
+        .redirect-link { display: inline-block; margin-top: 10px; background: #d4af37; color: #050508; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: 700; }
+
+        /* System Adaptability for Mobile screen */
+        @media(max-width: 768px) {
+            .workspace { flex-direction: column; height: calc(100vh - 130px); }
+            .sidebar { width: 100%; height: auto; padding: 10px; border-right: none; border-bottom: 1px solid rgba(0, 242, 254, 0.1); }
+            .chat-container { width: 100%; flex: 1; }
+            .qr-box img { width: 110px; height: 110px; }
+            .qr-box { margin-bottom: 5px; }
+            .chat-messages { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <div class="luxury-loader"></div>
+        <div class="intro-title">Welcome Trusted Store 2026</div>
+        <div class="intro-subtitle">By BISWA HACRR</div>
+    </div>
+
+    <div id="main-content">
+        <div class="chat-header">
+            <div class="header-info">
+                <div class="status-online"></div>
+                <h2>BISWA HACRR Automation Terminal</h2>
+            </div>
+            <div class="brand-tag">SECURE V3</div>
+        </div>
+
+        <div class="workspace">
+            <div class="sidebar">
+                <h3>Gateway Console</h3>
+                <div class="qr-box" id="qr-container">
+                    <img src="QR_Code.png" alt="QR Code" onerror="this.src='https://via.placeholder.com/150?text=QR+Ready'">
+                </div>
+                <p id="sidebar-status">System Standby. Execute operations using chat terminal commands.</p>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-box">
+                    <div class="msg bot">
+                        Welcome to the Elite Dashboard. Please execute <b>start/</b> command or <b>owner/</b> command to proceed.
+                    </div>
+                </div>
+
+                <div class="chat-input-bar">
+                    <input type="text" id="user-msg" placeholder="Enter console command..." onkeypress="checkEnter(event)">
+                    <button class="send-btn" onclick="processUserText()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Bulletproof Unlocking Engine for Main Screen Transition
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const intro = document.getElementById('intro-overlay');
+                const main = document.getElementById('main-content');
+                
+                // Absolute structural bypass to guarantee layout activation
+                if (intro && main) {
+                    intro.style.display = 'none';
+                    main.style.display = 'flex';
+                }
+            }, 3000); // 3 Seconds precise timer execution
+        });
+
+        // Safe Non-blocking Audio Setup
+        let audioCtx = null;
+        function playTouchSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } catch(e) {
+                console.log("Audio skipped safely to prevent UI freeze");
+            }
+        }
+
+        const modsDatabase = {
+            "The King👑Non Root Seft": ["3day - 120", "7 days - 300", "10 days - 400", "30 days - 1000"],
+            "Drip Claint Non Root": ["1day - 82", "3days - 180", "7days - 340", "15days - 590", "30days - 810"],
+            "Hg Cheats Non Root": ["1 day - 91", "7days - 180", "10 days - 280", "30days - 600"],
+            "Pato Team Non Root": ["3day - 210", "7days - 340", "15day - 600", "30 days - 950"],
+            "Praim Mod Non Root": ["1day - 82", "3days - 150", "7days - 300", "10 days - 330"],
+            "Mai account Seft Drag Headshot Panel": ["Unlimited Time After Patch Update tak - 500"]
+        };
+
+        let selectedMod = "";
+
+        function checkEnter(e) { if (e.key === 'Enter') processUserText(); }
+
+        function processUserText() {
+            playTouchSound();
+            const input = document.getElementById('user-msg');
+            const txt = input.value.trim();
+            if(!txt) return;
+
+            appendMessage(txt, 'user');
+            input.value = '';
+
+            const normalized = txt.toLowerCase();
+
+            setTimeout(() => {
+                if(normalized === 'start/') {
+                    triggerStart();
+                } else if(normalized === 'owner/') {
+                    triggerOwner();
+                } else if(normalized === 'hii') {
+                    appendMessage("Hello! Welcome to the premium portal.", 'bot');
+                } else {
+                    appendMessage("Your code not working", 'bot error-msg');
+                }
+            }, 300);
+        }
+
+        function appendMessage(text, className) {
+            const chatBox = document.getElementById('chat-box');
+            const mDiv = document.createElement('div');
+            mDiv.className = `msg ${className.includes('user') ? 'user' : 'bot'} ${className}`;
+            mDiv.innerHTML = text;
+            chatBox.appendChild(mDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return mDiv;
+        }
+
+        function triggerStart() {
+            appendMessage("<b>Premium Devices Mods Registry:</b><br>Select your core product architecture from the matrix options below:", 'bot');
+            const chatBox = document.getElementById('chat-box');
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container';
+
+            Object.keys(modsDatabase).forEach(modName => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn';
+                btn.innerText = modName;
+                btn.onclick = () => { playTouchSound(); selectModPlan(modName); };
+                btnContainer.appendChild(btn);
+            });
+            chatBox.appendChild(btnContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function triggerOwner() {
+            appendMessage("<b>Owner Contact Channels Initialized:</b><br>Select one of the direct telemetry links to reach the core developer:", 'bot');
+            const chatBox = document.getElementById('chat-box');
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container';
+
+            const tgBtn = document.createElement('button');
+            tgBtn.className = 'action-btn owner-btn-tg';
+            tgBtn.innerText = "Telegram Channel";
+            tgBtn.onclick = () => { playTouchSound(); window.open("https://t.me/HacrrGaming", "_blank"); };
+            btnContainer.appendChild(tgBtn);
+
+            const waBtn = document.createElement('button');
+            waBtn.className = 'action-btn owner-btn-wa';
+            waBtn.innerText = "WhatsApp Terminal";
+            waBtn.onclick = () => { playTouchSound(); window.open("https://wa.me/917099517202", "_blank"); };
+            btnContainer.appendChild(waBtn);
+
+            chatBox.appendChild(btnContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function selectModPlan(modName) {
+            selectedMod = modName;
+            appendMessage(`Core Selected: <b>${modName}</b>.<br>Choose your desired subscription duration runtime:`, 'bot');
+            const chatBox = document.getElementById('chat-box');
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container';
+
+            modsDatabase[modName].forEach(plan => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn';
+                btn.innerText = plan;
+                btn.onclick = () => { playTouchSound(); generateCheckout(plan); };
+                btnContainer.appendChild(btn);
+            });
+            chatBox.appendChild(btnContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function generateCheckout(planDetails) {
+            document.getElementById('qr-container').style.display = 'block';
+            document.getElementById('sidebar-status').innerText = `Active Profile: ${selectedMod} (${planDetails})`;
+
+            const instructions = `<b>⚠️ Secure Checkout Initialized!</b><br>Please Payment And Screenshot And 3 Minutes Wait.<br>The configuration key will decrypt once the timer reaches zero.`;
+            const botMsgDiv = appendMessage(instructions, 'bot');
+
+            const timerDiv = document.createElement('div');
+            timerDiv.className = 'timer-txt';
+            timerDiv.innerText = "Time Remaining: 03:00";
+            botMsgDiv.appendChild(timerDiv);
+
+            let totalSeconds = 180;
+            const interval = setInterval(() => {
+                totalSeconds--;
+                let mins = Math.floor(totalSeconds / 60);
+                let secs = totalSeconds % 60;
+                timerDiv.innerText = `Time Remaining: ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                if (totalSeconds <= 0) {
+                    clearInterval(interval);
+                    timerDiv.style.color = '#00ffcc';
+                    timerDiv.innerText = "System Authorization Verified! ✅";
+                    
+                    const baseTgUrl = "https://t.me/HacrrGaming";
+                    const formattedText = encodeURIComponent(`Hello Biswa, I have purchased:\nMod: ${selectedMod}\nPlan: ${planDetails}\nScreenshot Attached.`);
+                    const deepLink = `${baseTgUrl}?text=${formattedText}`;
+
+                    const successContainer = document.createElement('div');
+                    successContainer.innerHTML = `<br>Verification complete. Click below to fetch files:<br><a href="${deepLink}" target="_blank" class="redirect-link">Collect Files From Telegram</a>`;
+                    botMsgDiv.appendChild(successContainer);
+                    document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+                  </html>
+                  
